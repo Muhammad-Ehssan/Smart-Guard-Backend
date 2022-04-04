@@ -13,6 +13,8 @@ import numpy as np
 import time
 import base64
 from multiprocessing import Value
+from werkzeug.utils import secure_filename
+from werkzeug.datastructures import FileStorage
 
 
 counter = Value('i', 0)
@@ -117,7 +119,7 @@ def video():
     return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route("/a")
+@app.route("/")
 def index():
     send_notifications_wrapper()
 
@@ -218,6 +220,13 @@ def send_notifications_wrapper():
             send_notifications(line, "Video Made", "Press to view")
     except:
         return False
+
+
+@app.route("/voice", methods=['POST'])
+def voice():
+    f = request.files['file']
+    f.save(secure_filename(f.filename))
+    return (Response(), 200)
 
 
 def send_notifications(expo_token, title, body):

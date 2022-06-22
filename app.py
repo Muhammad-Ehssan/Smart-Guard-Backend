@@ -1,4 +1,6 @@
+
 from sqlalchemy import true
+
 import db as database
 import re
 from flask import Flask, render_template, Response, request, send_file, stream_with_context
@@ -66,7 +68,6 @@ DAYS = ["monday", "tuesday", "wednesday",
         "thursday", "friday", "saturday", "sunday"]
 DAY_EXTENTIONS = ["rd", "th", "st", "nd"]
 NAME = ['ahmed', 'hassan', 'ayesha', 'ehsan']
-START_DATE = datetime.date(2021, 2, 1)
 
 
 def fetch_audio_text():
@@ -145,10 +146,7 @@ def is_date_feasible(day, month, year):
         date = datetime.date(year, month, day)
     except ValueError:
         isValidDate = False
-    if isValidDate:
-        if date >= START_DATE and date <= datetime.date.today():
-            return True
-    return False
+    return isValidDate
 
 
 def search_date(processed_text):

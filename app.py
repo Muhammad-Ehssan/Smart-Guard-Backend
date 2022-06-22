@@ -150,15 +150,16 @@ def is_date_feasible(day, month, year):
 
 
 def search_date(processed_text):
+    processedText=processed_text
     day = month = year = None
-    for i in range(len(processed_text)):
-        processed_text[i] = processed_text[i]. lower()
-        if processed_text[i] in MONTHS:
-            month = MONTHS.index(processed_text[i])+1
-        if processed_text[i][-2:] in DAY_EXTENTIONS and processed_text[i][:-2].isdigit():
-            day = int(processed_text[i][:-2])
-        if processed_text[i][:4].isdigit():
-            year = int(processed_text[i][:4])
+    for i in range(len(processedText)):
+        processedText[i] = processedText[i]. lower()
+        if processedText[i] in MONTHS:
+            month = MONTHS.index(processedText[i])+1
+        if processedText[i][-2:] in DAY_EXTENTIONS and processedText[i][:-2].isdigit():
+            day = int(processedText[i][:-2])
+        if processedText[i][:4].isdigit():
+            year = int(processedText[i][:4])
             break
     if day != None and month != None and year != None:
         if is_date_feasible(day, month, year):
@@ -421,10 +422,10 @@ def voice():
     synonyms['set'] = fetch_synonyms(['set'])
     audio_text = fetch_audio_text()
     processed_text = process_text(audio_text)
-
+    
     action_verb = search_action(processed_text, synonyms)
     date = search_date(processed_text)
-
+    
     names = search_name(processed_text)
     print(audio_text)
     time = search_time(processed_text)

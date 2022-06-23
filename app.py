@@ -422,11 +422,10 @@ def voice():
     synonyms['set'] = fetch_synonyms(['set'])
     audio_text = fetch_audio_text()
     processed_text = process_text(audio_text)
-    
+    names = search_name(processed_text)
     action_verb = search_action(processed_text, synonyms)
     date = search_date(processed_text)
     
-    names = search_name(processed_text)
     print(audio_text)
     time = search_time(processed_text)
     if len(names) != 0:

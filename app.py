@@ -1,4 +1,5 @@
 
+from crypt import methods
 from sqlalchemy import true
 
 import db as database
@@ -150,7 +151,7 @@ def is_date_feasible(day, month, year):
 
 
 def search_date(processed_text):
-    processedText=processed_text
+    processedText = processed_text
     day = month = year = None
     for i in range(len(processedText)):
         processedText[i] = processedText[i]. lower()
@@ -305,11 +306,12 @@ def multiThreads():
                         best_match_index = np.argmin(face_distances)
                         if matches[best_match_index]:
                             name = known_face_names[best_match_index]
-                        print(name)
+
                         face_names.append(name)
                         if name == "Unknown":
                             cv2.imwrite("unkown.jpg", rgb_small_frame)
                             print("Unknown detectd,image saved")
+                            send_notifications_wrapper()
 
                 process_this_frame = not process_this_frame
 
@@ -329,7 +331,6 @@ def video():
 
 @app.route("/a")
 def index():
-    send_notifications_wrapper()
 
     return render_template("index.html")
 
@@ -392,15 +393,19 @@ def post_images():
     return jsonify(x)
 
 
+@app.route("/send_notif")
 def send_notifications_wrapper():
     try:
         file = open("Subscribers.txt", "r")
 
         readfile = file.read().splitlines()
         count = 0
+        data = []
         for line in readfile:
-
-            send_notifications(line, "Video Made", "Press to view")
+            data.append(line)
+        print(data)
+        send_notifications(data, "Unkown detected", "Press to view")
+        return True
     except:
         return False
 
@@ -413,6 +418,12 @@ def send_notifications(expo_token, title, body):
         'body': body
     }
     return req.post('https://exp.host/--/api/v2/push/send', json=message)
+
+
+@app.route("/unknown_people", methods=['GET'])
+def unknown_people():
+    filename = 'unkown.jpg'
+    return send_file(filename, mimetype='image/jpg')
 
 
 @app.route("/voice", methods=['POST'])
@@ -428,7 +439,7 @@ def voice():
     names = search_name(processed_text)
     action_verb = search_action(processed_text, synonyms)
     date = search_date(processed_text)
-    
+
     print(audio_text)
     time = search_time(processed_text)
     if len(names) != 0:

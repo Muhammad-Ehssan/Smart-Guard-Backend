@@ -277,7 +277,7 @@ def multiThreads():
         if not success:
             break
         else:
-            ret, buffer = cv2.imencode('.jpg', frame)
+
             result.write(frame)
             ########################
             if(counter == 1 or counter == 5 or counter == 10):
@@ -306,8 +306,11 @@ def multiThreads():
                         best_match_index = np.argmin(face_distances)
                         if matches[best_match_index]:
                             name = known_face_names[best_match_index]
-
+                        print(name)
                         face_names.append(name)
+                        if name == "Unknown":
+                            cv2.imwrite("unkown.jpg", rgb_small_frame)
+                            print("Unknown detectd,image saved")
 
                 process_this_frame = not process_this_frame
 

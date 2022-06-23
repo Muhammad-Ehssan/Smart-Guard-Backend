@@ -74,7 +74,7 @@ def get_by_name(name):
     path = []
     key = []
     cursor.execute(
-        "Select id,path from smartguard2 where name ='" + name + "'""")
+        "Select id,path from smartguard2 where name ='" + name + "' order by id desc limit 10""")
     return cursor.fetchall()
 
 

@@ -1,7 +1,5 @@
-from sqlalchemy import true
-import db as database
 import re
-from flask import Flask, render_template, Response, request, send_file, stream_with_context
+from flask import Flask, render_template, Response, request
 import cv2
 import base64
 import time
@@ -25,33 +23,9 @@ from nltk.corpus import wordnet as wn
 import datetime
 from pydub import AudioSegment
 from os import path
-import glob
-from pathlib import Path
-import threading
-dir_path = os.path.dirname(os.path.realpath(__file__))
-
-
-known_face_encodings = []
-known_face_names = []
-
-
-def encode_faces():
-    path = "/home/ehsan/Desktop/FYP/fyp_server/fyp_server/faceImages"
-    print("Training faces for recognition")
-    for filePath in glob.iglob(path + '**/*.jpg', recursive=True):
-        known_face_encodings.append(face_recognition.face_encodings(
-            face_recognition.load_image_file(filePath))[0])
-        known_face_names.append(Path(filePath).stem)
-    print("Training Completed")
-
-################Database#############
-
-#####################################
 
 
 ################## NLP###########################
-
-
 def convert_file():
     m4a_file = 'test.m4a'
     wav_filename = r"abc.wav"
@@ -65,7 +39,7 @@ MONTHS = ["january", "february", "march", "april", "may", "june",
 DAYS = ["monday", "tuesday", "wednesday",
         "thursday", "friday", "saturday", "sunday"]
 DAY_EXTENTIONS = ["rd", "th", "st", "nd"]
-NAME = ['ahmed', 'hassan', 'ayesha', 'ehsan']
+NAME = ['ahmed', 'hassan']
 START_DATE = datetime.date(2021, 2, 1)
 
 
@@ -78,7 +52,7 @@ def fetch_audio_text():
         r.adjust_for_ambient_noise(source)
         print("Talk")
         # <class 'speech_recognition.AudioData'>
-        # audio_text = r.record(source, duration=20)
+        #audio_text = r.record(source, duration=20)
         audio_text = r.record(source)  # read the entire audio file
         print("Time over, thanks")
         try:
@@ -124,18 +98,9 @@ def search_action(processed_text, synonyms):
 
 def search_name(processed_text):
     names = []
-    s = ""
-    print("known faces are", known_face_names)
     for word in processed_text:
-
-        list_to_str = "".join(map(str, word))
-        list_to_str = list_to_str.title()
-        print("Title is ", list_to_str)
-        if list_to_str.title() in known_face_names:
-            print("Yes")
-            names.append(list_to_str)
-            s = ""
-    print(names)
+        if word in NAME:
+            names.append(word)
     return names
 
 
@@ -203,6 +168,16 @@ def search_time(processed_text):
 
 counter = Value('i', 0)
 
+config_firebase = {
+    "apiKey": "AIzaSyDatGf-08IgqLhQX7fliKu4Mjyh5VPuHjc",
+    "authDomain": "trie-994c1.firebaseapp.com",
+    "projectId": "trie-994c1",
+    "storageBucket": "trie-994c1.appspot.com",
+    "messagingSenderId": "815090125887",
+    "appId": "1:815090125887:web:acd4a2a3346b7ace447c8a",
+    "serviceAccount": "serciveaccountkey.json"
+}
+
 
 cur_path = os.path.dirname(__file__)
 app = Flask(__name__)
@@ -227,56 +202,34 @@ def people():
     return x
 
 
-def send_live_stream():
-    while true:
-        success, frame = camera.read()
-
-        ret, buffer = cv2.imencode('.jpg', frame)
-        frame = buffer.tobytes()
-        yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
-
-
 def multiThreads():
-    face_locations = []
-    face_encodings = []
-    face_names = []
-    process_this_frame = True
-    counter = 0
-    videoLength = 1500  # 15 seconds long video
+    print("Hello")
+
+    videoLength = 150  # 15 seconds long video
     # set your screen size here
     frame_width = int(camera.get(3))
     frame_height = int(camera.get(4))
     size = (frame_width, frame_height)
-    location = time.strftime('%d%m%Y-%H%M%S')
-    result = cv2.VideoWriter(f"videos/{location}.mp4",
-                             cv2.VideoWriter_fourcc(*'mp4v'),
-                             20, size)
+
+    result = cv2.VideoWriter(f"videos/{time.strftime('%d %m %Y - %H %M %S')}.avi",
+                             cv2.VideoWriter_fourcc(*'MJPG'),
+                             10, size)
     i = 0
-    all_faces = set()
     while True:
-        i += 1  # For chucnking
-        counter += 1
-        if(counter > 10):  # For detecting face
-            counter = 0
+        i += 1
         if i > videoLength:
-            for i in all_faces:
-                print(i)
-                database.insert_query(i, location)
-            all_faces = set()
             result.release()
             i = 0
-            location = time.strftime('%d%m%Y-%H%M%S')
-            result = cv2.VideoWriter(f"videos/{location}.mp4",
-                                     cv2.VideoWriter_fourcc(*'mp4v'),
-                                     20, size)
+            result = cv2.VideoWriter(f"videos/{time.strftime('%d %m %Y - %H %M %S')}.avi",
+                                     cv2.VideoWriter_fourcc(*'MJPG'),
+                                     10, size)
         success, frame = camera.read()
-        half = cv2.resize(frame, (0, 0), fx=0.25, fy=0.25)
-        rgb_small_frame = half[:, :, ::-1]
+        half = cv2.resize(frame, (0, 0), fx=0.3, fy=0.3)
 
         if not success:
             break
         else:
+<<<<<<< HEAD
 
             result.write(frame)
             ########################
@@ -318,20 +271,29 @@ def multiThreads():
             for name in face_names:
 
                 all_faces.add(name)
+=======
 
-            ##########################
+            ret, buffer = cv2.imencode('.jpg', half)
+            # save_video(buffer)
+            result.write(frame)
+>>>>>>> parent of 1fa71d0... Video saving in seprate thread
+
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
 
 
 @app.route("/video")
 def video():
 
-    return Response(send_live_stream(), mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(multiThreads(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route("/a")
+@app.route("/")
 def index():
     send_notifications_wrapper()
-
+    global camera
+    camera = cv2.VideoCapture(0)
     return render_template("index.html")
 
 
@@ -384,11 +346,16 @@ def subscribe():
         return jsonify(x)
 
 
+@app.route("/ehsan")
+def ehsan():
+    return "ehsan"
+
+
 @app.route("/Postimages",  methods=['POST'])
 def post_images():
     r = request
     f = request.files['file']
-    f.save(os.path.join("faceImages", secure_filename(f.filename)))
+    f.save(secure_filename(f.filename))
     x = {"message": "Yes"}
     return jsonify(x)
 
@@ -426,37 +393,13 @@ def voice():
     synonyms['set'] = fetch_synonyms(['set'])
     audio_text = fetch_audio_text()
     processed_text = process_text(audio_text)
-
     action_verb = search_action(processed_text, synonyms)
     date = search_date(processed_text)
-
     names = search_name(processed_text)
-    print(audio_text)
     time = search_time(processed_text)
-    if len(names) != 0:
-        print("Size not 0")
-        l1 = database.make_list(database.get_by_name(names[0].title()))
-        x = {"message": audio_text, "data": l1}
-    else:
-        x = {"message": "No result found", "data": "err"}
+    x = {"message": audio_text}
     return jsonify(x)
 
 
-@app.route("/video_stored/<video_id>")
-def video_stored(video_id):
-
-    return send_file(
-        "videos/{}".format(video_id+".mp4"))
-
-
 if __name__ == "__main__":
-    encode_faces()
-
-    global camera
-    global success
-    global frame
-    camera = cv2.VideoCapture(0)
-    th = threading.Thread(target=multiThreads)
-    th.start()
-    print(known_face_names)
     app.run(host="0.0.0.0")

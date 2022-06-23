@@ -1,32 +1,24 @@
 import psycopg2
-
-
-def set_conection():
-    connection = psycopg2.connect(
-        user="ehsan",
-        password="180788",
-        host="localhost",
-        port="5432",
-        database="temp"
-    )
-
-    return connection
+connection = psycopg2.connect(
+    user="ehsan",
+    password="180788",
+    host="localhost",
+    port="5432",
+    database="temp"
+)
 
 
 def create_tables():
-    connection = set_conection()
-    cursor = connection.cursor()
+
     commands = (
         """
         CREATE TABLE smartguard2 (
             id SERIAL PRIMARY KEY,
             name VARCHAR(255) NOT NULL,
-            path VARCHAR(255) NOT NULL,
-            date DATE DEFAULT CURRENT_DATE,
-            created_at TIME DEFAULT CURRENT_TIME
-        
+            path VARCHAR(255) NOT NULL
         )
         """)
+<<<<<<< HEAD
     try:
         cursor.execute(commands)
     finally:
@@ -91,10 +83,13 @@ def drop_table():
     cursor.execute("DROP TABLE IF EXISTS smartguard2;")
     connection.commit()
 
+=======
+    return commands
+>>>>>>> parent of 1fa71d0... Video saving in seprate thread
 
-def main():
-    create_tables()
 
+cursor = connection.cursor()
+commands1 = create_tables()
+cursor.execute(commands1)
 
-if __name__ == "__main__":
-    main()
+#cursor.execute("DROP TABLE IF EXISTS smartguard2;")

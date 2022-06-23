@@ -405,9 +405,9 @@ def send_notifications_wrapper():
             data.append(line)
         print(data)
         send_notifications(data, "Unkown detected", "Press to view")
-        return True
+        return "yes"
     except:
-        return False
+        return "no"
 
 
 def send_notifications(expo_token, title, body):
